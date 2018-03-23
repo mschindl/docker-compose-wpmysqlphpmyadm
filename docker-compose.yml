@@ -1,0 +1,56 @@
+# ID = 01
+version: '2'
+services:
+   01-wordpress:
+     depends_on:
+     - wordpress_db
+     image: wordpress:latest
+     container_name: wordpress
+     ports:
+       - "8000:80"
+       - "443:443"
+     links:
+       - 01-wordpress_db
+     restart: always
+     volumes: # Mount relative path source folder on host to absolute path destination folder on docker container
+       - 01-wpdata-themes:/var/www/html/wp-content/themes/theme_name
+       - 01-wpdata-plugins:/var/www/html/wp-content/plugins
+       - 01-wpdata-uploads:/var/www/html/wp-content/uploads
+     environment:
+       WORDPRESS_DB_HOST: 01-wordpress_db
+       WORDPRESS_DB_USER: wpuser
+       WORDPRESS_DB_PASSWORD: wpuserpw
+       WORDPRESS_DB_NAME: wpdb01
+       WORDPRESS_TABLE_PREFIX: wp01_
+   01-wordpress_db:
+     container_name: database
+     image: mysql:latest
+     ports:
+       - "3306:3306"
+     volumes:
+       - 01-db-data:/var/lib/mysql
+     restart: always
+     environment:
+       MYSQL_ROOT_PASSWORD: 01-changeme
+       MYSQL_DATABASE: wpdb01
+       MYSQL_USER: wpuser
+       MYSQL_PASSWORD: wpuserpw
+   01-phpmyadmin:
+     image: phpmyadmin/phpmyadmin:latest
+     container_name: phpmyadmin
+     ports:
+        - 8181:80
+     restart: always
+     environment: 
+       MYSQL_USERNAME: root
+       MYSQL_ROOT_PASSWORD: rootwordpressdb
+       PMA_HOST: wordpress_db
+volumes:
+    01-db-data:
+      driver: local
+    01-wpdata-themes:
+      driver: local  
+    01-wpdata-plugins:
+      driver: local
+    01-wpdata-uploads:
+      driver: local
